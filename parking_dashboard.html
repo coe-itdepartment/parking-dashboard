@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parking Availability Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .location-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .location-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .location-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .location-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .count-display {
+            font-size: 4em;
+            font-weight: bold;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .count-available {
+            color: #27ae60;
+        }
+
+        .count-warning {
+            color: #f39c12;
+        }
+
+        .count-full {
+            color: #e74c3c;
+        }
+
+        .status-text {
+            font-size: 1.2em;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        .last-updated {
+            text-align: center;
+            color: white;
+            font-size: 1.1em;
+            margin-top: 20px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .error-message {
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.5em;
+            margin: 50px 0;
+        }
+
+        .refresh-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin: 20px auto;
+            display: block;
+        }
+
+        .refresh-btn:hover {
+            background: white;
+            color: #667eea;
+            transform: scale(1.05);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚗 Parking Availability</h1>
+        
+        <button class="refresh-btn" onclick="loadData()">🔄 Refresh Data</button>
+        
+        <div id="error-container"></div>
+        <div id="loading" class="loading">Loading parking data...</div>
+        <div id="location-container" class="location-grid"></div>
+        <div id="last-updated" class="last-updated"></div>
+    </div>
+
+    <script>
+        // Configuration
+        const CONFIG = {
+            dataFile: 'location_data.json',
+            refreshInterval: 60000, // Refresh every 60 seconds
+            locations: {
+                '17f365e4-0fb2-41b0-b246-be6484f11050': 'Main Parking Garage'
+            },
+            thresholds: {
+                warning: 50,
+                full: 20
+            }
+        };
+
+        async function loadData() {
+            const loadingEl = document.getElementById('loading');
+            const errorContainer = document.getElementById('error-container');
+            const locationContainer = document.getElementById('location-container');
+            const lastUpdatedEl = document.getElementById('last-updated');
+
+            try {
+                loadingEl.style.display = 'block';
+                errorContainer.innerHTML = '';
+                
+                const response = await fetch(CONFIG.dataFile + '?t=' + Date.now());
+                if (!response.ok) {
+                    throw new Error(`Failed to load data: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                // Handle both old and new data formats
+                let locations, lastUpdated;
+                if (data.locations) {
+                    locations = data.locations;
+                    lastUpdated = data.last_updated;
+                } else {
+                    locations = data;
+                    lastUpdated = new Date().toISOString();
+                }
+                
+                loadingEl.style.display = 'none';
+                locationContainer.innerHTML = '';
+                
+                Object.entries(locations).forEach(([locationId, count]) => {
+                    const locationName = CONFIG.locations[locationId] || `Location ${locationId.substring(0, 8)}...`;
+                    const card = createLocationCard(locationName, count);
+                    locationContainer.appendChild(card);
+                });
+
+                const updateTime = lastUpdated ? new Date(lastUpdated).toLocaleString() : new Date().toLocaleString();
+                lastUpdatedEl.textContent = `Last updated: ${updateTime}`;
+                
+            } catch (error) {
+                loadingEl.style.display = 'none';
+                errorContainer.innerHTML = `
+                    <div class="error-message">
+                        <strong>Error loading data:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function createLocationCard(name, count) {
+            const card = document.createElement('div');
+            card.className = 'location-card';
+            
+            let statusClass = 'count-available';
+            let statusText = 'Available';
+            
+            if (count === null || count === undefined) {
+                statusClass = 'count-full';
+                statusText = 'Data Unavailable';
+                count = '?';
+            } else if (parseInt(count) <= CONFIG.thresholds.full) {
+                statusClass = 'count-full';
+                statusText = 'Nearly Full';
+                card.classList.add('pulse');
+            } else if (parseInt(count) <= CONFIG.thresholds.warning) {
+                statusClass = 'count-warning';
+                statusText = 'Limited Spaces';
+            }
+
+            card.innerHTML = `
+                <div class="location-name">${name}</div>
+                <div class="count-display ${statusClass}">${count}</div>
+                <div class="status-text">${statusText}</div>
+            `;
+
+            return card;
+        }
+
+        function startAutoRefresh() {
+            setInterval(loadData, CONFIG.refreshInterval);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            startAutoRefresh();
+        });
+
+        window.addEventListener('message', function(event) {
+            if (event.data === 'refresh') {
+                loadData();
+            }
+        });
+    </script>
+</body>
+</html>
