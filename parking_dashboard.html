@@ -44,29 +44,6 @@
             font-weight: normal;
         }
 
-        .controls {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
-        .refresh-btn {
-            background: #1e4a72;
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.95em;
-            font-weight: 600;
-            transition: background-color 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .refresh-btn:hover {
-            background: #2c5aa0;
-        }
-
         .location-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -146,12 +123,6 @@
             margin-bottom: 10px;
         }
 
-        .city-info {
-            color: #1e4a72;
-            font-size: 0.85em;
-            font-weight: 600;
-        }
-
         .error-message {
             background: #f8d7da;
             color: #721c24;
@@ -189,15 +160,6 @@
             animation: pulse 2s infinite;
         }
 
-        /* Municipal color scheme adjustments */
-        .municipal-accent {
-            background: linear-gradient(135deg, #1e4a72 0%, #2c5aa0 100%);
-            color: white;
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-        }
-
         /* Responsive design */
         @media (max-width: 768px) {
             .container {
@@ -225,20 +187,12 @@
             <div class="subtitle">City of Easton, PA - Real-Time Updates</div>
         </div>
         
-        <div class="controls">
-            <button class="refresh-btn" onclick="loadData()">🔄 Refresh Data</button>
-        </div>
-        
         <div id="error-container"></div>
         <div id="loading" class="loading">Loading current parking availability...</div>
         <div id="location-container" class="location-grid"></div>
         
         <div class="footer-info">
             <div id="last-updated" class="last-updated"></div>
-            <div class="city-info">
-                City of Easton Public Works Department<br>
-                For assistance, call: (610) 250-6000
-            </div>
         </div>
     </div>
 
@@ -248,8 +202,8 @@
             dataFile: 'location_data.json',
             refreshInterval: 60000, // Refresh every 60 seconds
             locations: {
-                '17f365e4-0fb2-41b0-b246-be6484f11050': 'Centre Square Garage',
-                'dde34d17-dd89-4426-9ba3-ba18206c26a1': 'Municipal Parking Lot'
+                '17f365e4-0fb2-41b0-b246-be6484f11050': 'N 4th Street Garage',
+                'dde34d17-dd89-4426-9ba3-ba18206c26a1': 'S 3rd Street Garage'
             },
             thresholds: {
                 warning: 50,
