@@ -1,15 +1,15 @@
 {
-  "last_updated": "2026-01-14T05:30:21.460182",
+  "last_updated": "2026-01-14T05:45:23.960719",
   "locations": {
     "17f365e4-0fb2-41b0-b246-be6484f11050": {
-      "actual_count": 148,
+      "actual_count": 150,
       "capacity": 454,
-      "available_spaces": 306
+      "available_spaces": 304
     },
     "dde34d17-dd89-4426-9ba3-ba18206c26a1": {
-      "actual_count": 56,
+      "actual_count": 59,
       "capacity": 338,
-      "available_spaces": 282
+      "available_spaces": 279
     }
   }
 }
